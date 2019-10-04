@@ -1,0 +1,134 @@
+Write a function that takes two strings as arguments s and p and returns a boolean denoting 
+whether s matches p
+
+p is a sequence of any number of the following:
+	1: a-z - which stans for itself
+	2: . - which matches any character
+	3: * - which matches 0 or more occuraences of the previous single character
+
+s = 'aba', p='ab' => false
+s = 'aac', p='aad*c' => true
+s = 'ab', p='.*' => true
+s = 'ab', p='.' => false
+s = 'aab', p='c*a*b' => true
+s = 'aab', p='ca*b' => false
+s = 'aaa', p='a*.' => true
+s = 'bbbcc', p='b*bcc' => true
+[[undefined,b,*], [b,*,b], [*,b,c], [b,c,c], [c,c,undefined]]
+s = 'aac', p='.ad*c*.' => true
+[[undefined,.,a],[.,a,d],[a,d,*],[d,*,c],[*,c,*],[c,*,undefined]]
+s = 'daab', p='dc*a*b' => true
+[[undefined,d,c], [d,c,*], [c,*,a], [*, a, *], [a, *, b], [*,b,undefined]]
+
+store prev, cur, next value of p in array for each character
+
+for each char in s
+	if pArray == char //a-z case
+		pArray index ++
+		char index ++
+	else if pArray == '.'
+		pArray index ++
+		char index ++
+	else if pArray == '*'
+		//Case 1 - char does not match prev pArray value
+			//This case will not happen?
+		//Case 2 - char does match prev pArray value
+			//Case 1 - next pArray value matches prev pArray Value
+				//increment pArray index by 1 to be at the next pArray spot 
+				//loop through string until char does not match cur pArray Value (we incremented
+				//pArray index 
+				//increment pArray value again
+			//Case 2 - next pArray value does not match prev pArray Value
+	else 
+		if next pArray val is a *
+			//This is an instance of 0 occurances of this character in pArray so increase index
+			
+		else
+			return false
+s = 'bbbcc', p='b*bcc' => true
+[[undefined,b,*], [b,*,b], [*,b,c], [b,c,c], [c,c,undefined]]
+s = 'daab', p='dc*a*b' => true
+[[undefined,d,c], [d,c,*], [c,*,a], [*, a, *], [a, *, b], [*,b,undefined]]
+
+
+s = 'aac', p='.ad*c***' => true
+[[undefined,.,a],[.,a,d],[a,d,*],[d,*,c],[*,c,d],[c,d,*],[d,*,undefined]]
+
+. char so strInd = 1, pInd = 1
+a = a so strInd = 2, pInd = 2
+d != c but next Pattern character is * so pInd = 4 
+c = c so pInd = 5 strInd = 3
+loop breaks now
+
+
+pInd !< pattern.length && strInd < string.length
+
+function isValid(string,pattern) {
+	let pArray = generatePatternArray(pattern);
+	let pInd = 0
+	let charInd = 0
+
+	while(charInd < string.length && pInd < pArray.length) {
+		if(string[charInd] === pArray[pInd][1] || pArray[pInd][1] === '.') {
+			strInd++;
+			pInd++;	
+		} else if(pArray[pInd][1] === '*') {
+			if(string[strInd] !== pArray[pInd][1]) {
+				//This if statement should not evaluate to true, but if it does
+				//this will prevent an infinite loop and assist with debugging logic
+				break;
+			} else {
+				if(pArray[pInd][0] === pArray[pInd][2]) {
+					pInd++;
+				}
+
+				while(string[strInd] === pArray[pInd][1]) {
+					strInd++;
+				}
+				pInd++;
+			}
+		} else {
+			if(pArray[pInd][2] === '*') {
+				//This is an instance of 0 occurances of this character in pArray so 
+				//increase pInd by 2
+				pInd += 2;
+			} else {
+				return false
+			}
+		}
+	}
+	
+	while(pInd < pArray.length) {
+		//Case 1 - next char from current ind is * then 0 occurances of item
+		//Case 2 - cur char is *
+		if(pArray[pInd][2] === '*') {
+			pInd += 2;
+		} else if(pArray[pInd][1] === '*') {
+			pInd += 1;
+		} else {
+			return false;
+		}
+	}
+	
+	return true;
+}
+
+function generatePatternArray(p) {
+	let ans = []
+	let length = p.length
+
+	if(length === 1) {
+		return [[undefined, p[0], undefined]];
+	}
+	
+	for(let i=0; i<p.length; i++) {
+		if(i === 0) {
+			ans.push([undefined, p[i], p[i+1]])
+		} else if( i === length -1) {
+			ans.push([p[i-1], p[i],undefined])
+		} else {
+			ans.push([p[i-1], p[i], p[i+1]])
+		}
+	}
+	return ans;
+}	
